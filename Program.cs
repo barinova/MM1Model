@@ -27,7 +27,7 @@ namespace MM1Model
         static double acceptedRequests = 0;
         static double inputRequests = 0;
 
-        static double timeProcess = 48; // sec
+        static double timeProcess = 60; // sec
 
         static void request(object obj)
         {
@@ -36,7 +36,7 @@ namespace MM1Model
             {
                 serviceDelayed = true;
                 acceptedRequests += 1;
-                System.Threading.Timer serviceTimerItem = new System.Threading.Timer(serviceTimerDelegate, requestStateObj, randomTime(12, 20), 0);
+                System.Threading.Timer serviceTimerItem = new System.Threading.Timer(serviceTimerDelegate, serviceStateObj, randomTime(12, 20), 0);
                 serviceStateObj.TimerReference = serviceTimerItem;
             }
 
@@ -45,11 +45,15 @@ namespace MM1Model
             System.Threading.Interlocked.Increment(ref State.SomeValue);
             System.Diagnostics.Debug.WriteLine("Request:: Launched new thread  " + DateTime.Now.ToString());
 
-            if (State.TimerCanceled)
+            State.TimerReference.Dispose();
+            System.Diagnostics.Debug.WriteLine("Request:: Done  " + DateTime.Now.ToString());
+
+            if (!State.TimerCanceled)
             {
-                State.TimerReference.Dispose();
-                System.Diagnostics.Debug.WriteLine("Request:: Done  " + DateTime.Now.ToString());
+                System.Threading.Timer requestTimerItem = new System.Threading.Timer(requestTimerDelegate, requestStateObj, randomTime(12, 34), randomTime(12, 34));
+                requestStateObj.TimerReference = requestTimerItem;           
             }
+
         }
 
         static void service(object obj)
@@ -74,14 +78,13 @@ namespace MM1Model
         static void Main(string[] args)
         {
             requestStateObj.TimerCanceled = false;
-            requestStateObj.TimerCanceled = false;
-            requestStateObj.SomeValue = DateTime.Now.Minute;
-            
+            serviceStateObj.TimerCanceled = false;
+            double startTime = DateTime.Now.Minute;
+
             System.Threading.Timer requestTimerItem = new System.Threading.Timer(requestTimerDelegate, requestStateObj, 0, randomTime(12, 34));
-            
             requestStateObj.TimerReference = requestTimerItem;
 
-            while ((requestStateObj.SomeValue - DateTime.Now.Minute)/10 < 0.8) //or serviceStateObject
+            while ((DateTime.Now.Minute - startTime) < 1) //or serviceStateObject
             {
                 System.Threading.Thread.Sleep(1000);  
             }
