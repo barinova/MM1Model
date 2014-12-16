@@ -4,124 +4,53 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
-namespace MM1Model
+class Program
 {
-
-    class StateObjClass
+    static Timer timer;
+    static System.Threading.TimerCallback requestTimerDelegate = new System.Threading.TimerCallback(timerTick);
+    static int inputRequests = 0;
+    static bool request = false;
+    static Random rand = new Random();
+    static private void timerTick(object obj)
     {
-        // Used to hold parameters for calls to TimerTask.
-        public int SomeValue;
-        public System.Threading.Timer TimerReference;
-        public bool TimerCanceled;
+        request = true;
+        inputRequests += 1;
+        timer.Change(rand.Next(12, 34), 0);
     }
-
-    class Program
+    
+    static void Main()
     {
-        
-        static System.Threading.TimerCallback requestTimerDelegate = new System.Threading.TimerCallback(request);
-        static System.Threading.TimerCallback serviceTimerDelegate = new System.Threading.TimerCallback(service);
-        static StateObjClass requestStateObj = new StateObjClass();
-        static StateObjClass serviceStateObj = new StateObjClass();
-        static bool serviceDelayed = false;
-
-        static double acceptedRequests = 0;
-        static double inputRequests = 0;
-
-        static double timeProcess = 48; // sec
-
-        static void request(object obj)
+        int timeProcess = 48000;
+        double acceptedRequests, declinesRequests;
+        CProducerConsumerQueue queue;
+        using (queue = new CProducerConsumerQueue())
         {
-            inputRequests += 1;
-            if (!serviceDelayed)
-            {
-                serviceDelayed = true;
-                acceptedRequests += 1;
-                System.Threading.Timer serviceTimerItem = new System.Threading.Timer(serviceTimerDelegate, requestStateObj, randomTime(12, 20), 0);
-                serviceStateObj.TimerReference = serviceTimerItem;
-            }
+            DateTime maxTime = DateTime.Now.AddMilliseconds(timeProcess);
+            timer = new Timer(timerTick, null, 1, rand.Next(12, 34));
 
-            StateObjClass State = (StateObjClass)requestStateObj;
-            // Use the interlocked class to increment the counter variable
-            System.Threading.Interlocked.Increment(ref State.SomeValue);
-            System.Diagnostics.Debug.WriteLine("Request:: Launched new thread  " + DateTime.Now.ToString());
-
-            if (State.TimerCanceled)
+            while (maxTime > DateTime.Now)
             {
-                State.TimerReference.Dispose();
-                System.Diagnostics.Debug.WriteLine("Request:: Done  " + DateTime.Now.ToString());
+                if (request)
+                {
+                    request = false;
+                    queue.EnqueueTask("Input requests: " + inputRequests.ToString() + "\n");
+                }
             }
         }
 
-        static void service(object obj)
-        {
-            StateObjClass State = (StateObjClass)serviceStateObj;
-            // Use the interlocked class to increment the counter variable
-            System.Threading.Interlocked.Increment(ref State.SomeValue);
-            System.Diagnostics.Debug.WriteLine("Service:: Launched new thread  " + DateTime.Now.ToString());
+        acceptedRequests = queue.getAcceptedRequests();
+        declinesRequests = inputRequests - acceptedRequests;
+        double lambda = (inputRequests + declinesRequests) / timeProcess;
+        double midServicingTime = timeProcess / acceptedRequests;
+        double Mu = 1 / midServicingTime;
+        double q = lambda / (Mu + lambda);	//пропускная способность относит
+        double A = lambda * q;	//пропускная способность абс
+        double P_otk = declinesRequests / (declinesRequests + acceptedRequests);
 
-            State.TimerReference.Dispose();
-            System.Diagnostics.Debug.WriteLine("Service:: Done  " + DateTime.Now.ToString());
-
-            serviceDelayed = false;
-        }
-
-        static int randomTime(int minTime, int maxTime)
-        {
-            Random time = new Random();
-            return time.Next(minTime, maxTime)*100;
-        }
-
-        static void Main(string[] args)
-        {
-            requestStateObj.TimerCanceled = false;
-            requestStateObj.TimerCanceled = false;
-            requestStateObj.SomeValue = DateTime.Now.Minute;
-            
-            System.Threading.Timer requestTimerItem = new System.Threading.Timer(requestTimerDelegate, requestStateObj, 0, randomTime(12, 34));
-            
-            requestStateObj.TimerReference = requestTimerItem;
-
-            while ((requestStateObj.SomeValue - DateTime.Now.Minute)/10 < 0.8) //or serviceStateObject
-            {
-                System.Threading.Thread.Sleep(1000);  
-            }
-
-            requestStateObj.TimerCanceled = true;
-            serviceStateObj.TimerCanceled = true;
-
-            double declinesRequests = inputRequests - acceptedRequests;
-
-            double Lambda = (inputRequests + declinesRequests) / timeProcess; //48000 ms ~ 0.8 min
-
-            if (acceptedRequests > 0)
-            {
-                double midServicingTime = timeProcess/acceptedRequests;
-                Console.WriteLine("Requests:");
-                Console.WriteLine(inputRequests.ToString());
-                Console.WriteLine("Proccessed:");
-                Console.WriteLine(acceptedRequests.ToString());
-                Console.WriteLine("Declined:");
-                Console.WriteLine(declinesRequests.ToString());
-
-                double Mu = 1 / midServicingTime;
-                double q = Lambda / (Mu + Lambda);	//пропускная способность относит
-                double A = Lambda * q;	//пропускная способность абс
-                double P_otk = declinesRequests / (declinesRequests + acceptedRequests);
-
-                Console.WriteLine("q:");
-                Console.WriteLine(q);
-                Console.WriteLine("A:");
-                Console.WriteLine(A);
-                Console.WriteLine("Potk:");
-                Console.WriteLine(P_otk);
-                Console.WriteLine("L'ambda:");
-                Console.WriteLine(Lambda);
-                Console.WriteLine("M'u:");
-                Console.WriteLine(Mu);
-            }
-
-            Console.WriteLine("Press any key to exit.");
-            Console.ReadKey();
-        }
+        Console.WriteLine("Obrabotanniye zayavki: {0:D}\n", (int)acceptedRequests);
+        Console.WriteLine("Neobrabotanniye zayavki: {0:D}\n", (int)declinesRequests);
+        Console.WriteLine("Propnaya sposobnost' otnos: {0:F}\n", q);
+        Console.WriteLine("Propnaya sposobnost' abs: {0:F}\n", A);
+        Console.WriteLine("Veroyatnost' otkaza: {0:F}\n", P_otk);
     }
 }
