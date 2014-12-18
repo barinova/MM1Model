@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CGaussian.cs" />
     <Compile Include="CProducerConsumerQueue.cs" />
     <Compile Include="CTimerProcess.cs" />
     <Compile Include="Program.cs" />

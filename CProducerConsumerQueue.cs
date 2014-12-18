@@ -13,9 +13,12 @@ class CProducerConsumerQueue : IDisposable
     Random rand = new Random();
     int acceptedRequests = 0;
     bool isRequestProc = false;
+    CGaussian gaussTime = new CGaussian();
+    bool isGaussian = false;
 
-    public CProducerConsumerQueue()
+    public CProducerConsumerQueue(bool type)
     {
+        isGaussian = type;
         worker = new Thread(Work);
         worker.Start();
     }
@@ -54,7 +57,7 @@ class CProducerConsumerQueue : IDisposable
             if (task != null)
             {
                 isRequestProc = true;
-                Thread.Sleep(rand.Next(12, 20));
+                Thread.Sleep(getTime());
                 
                 acceptedRequests += 1;
                 isRequestProc = false;
@@ -64,6 +67,23 @@ class CProducerConsumerQueue : IDisposable
             else
                 wh.WaitOne();
         }
+    }
+
+    private int getTime()
+    {
+        int time;
+
+        if (!isGaussian)
+        {
+            time = rand.Next(12, 20);
+        }
+        else
+        {
+            time = gaussTime.Next(12, 20);
+            Console.WriteLine(time);
+        }
+
+        return time;
     }
 
     public int getAcceptedRequests() { return acceptedRequests; }

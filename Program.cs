@@ -7,10 +7,18 @@ class Program
 {
     static void Main()
     {
+        string inputText;
         int timeProcess = 48000;
         double acceptedRequests, declinesRequests, inputRequests, lambda, midServicingTime, mu, q, A, probabilityDeclines;
+        bool isGaussian = false;
+        Console.WriteLine("Enter '0' if the distribution of time is linear and '1' if gaussian");
+        inputText = Console.ReadLine();
 
-        CTimerProcess proc = new CTimerProcess(timeProcess);
+        if (inputText.CompareTo("1") == 0)
+            isGaussian = true;
+
+
+        CTimerProcess proc = new CTimerProcess(timeProcess, isGaussian);
 
         acceptedRequests = proc.getAcceptedRequests();
         declinesRequests = proc.getDeclinesRequests();
@@ -22,6 +30,7 @@ class Program
         q = lambda / (mu + lambda);	//пропускная способность относит
         A = lambda * q;	//пропускная способность абс
         probabilityDeclines = declinesRequests / (declinesRequests + acceptedRequests);
+
         Console.WriteLine("Vhodyashie zayavki: {0:D}\n", (int)inputRequests);
         Console.WriteLine("Obrabotanniye zayavki: {0:D}\n", (int)acceptedRequests);
         Console.WriteLine("Neobrabotanniye zayavki: {0:D}\n", (int)declinesRequests);
