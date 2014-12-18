@@ -13,7 +13,11 @@ class CTimerProcess
     static CProducerConsumerQueue queue;
     double acceptedRequests, declinesRequests;
     static bool isGaussian = false;
+    static bool isQueue = false;
+    static bool isQueueBusy = false;
     static CGaussian gaussTime = new CGaussian();
+    static double countQueuePaticipiant = 0;
+    static DateTime time, timeWaiting;
     System.Threading.TimerCallback requestTimerDelegate = new System.Threading.TimerCallback(timerTick);
 
     static private void timerTick(object obj)
@@ -25,6 +29,15 @@ class CTimerProcess
         if (!queue.isRequestProcessed())
         {
             startProcess();
+        }
+        else
+        {
+            if (isQueue && !queue.isQueueBusy)
+            {
+                time = DateTime.Now;
+                queue.isQueueBusy = true;
+                countQueuePaticipiant += 1;
+            }
         }
 
         timer.Change(getTime(), 0);
@@ -51,9 +64,17 @@ class CTimerProcess
     static private void startProcess()
     {
         queue.EnqueueTask("Input requests: " + inputRequests.ToString() + "\n");
+
+        if (queue.isQueueBusy)
+        {
+            timeWaiting += DateTime.Now - time;
+            inputRequests += 1;
+            queue.isQueueBusy = false;
+            queue.EnqueueTask("Input requests: " + inputRequests.ToString() + "\n");
+        }
     }
 
-    public CTimerProcess(int timeProcess, bool isGaussian)
+    public CTimerProcess(int timeProcess, bool isGaussian, bool isQueue)
     {
         using (queue = new CProducerConsumerQueue(isGaussian))
         {

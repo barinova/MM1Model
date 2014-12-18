@@ -15,7 +15,15 @@ class CProducerConsumerQueue : IDisposable
     bool isRequestProc = false;
     CGaussian gaussTime = new CGaussian();
     bool isGaussian = false;
-
+    bool queueBusy = false;
+    public bool isQueueBusy
+    {
+        get { return queueBusy; }
+        set
+        {
+            queueBusy = value;
+        }
+    }
     public CProducerConsumerQueue(bool type)
     {
         isGaussian = type;
@@ -58,7 +66,6 @@ class CProducerConsumerQueue : IDisposable
             {
                 isRequestProc = true;
                 Thread.Sleep(getTime());
-                
                 acceptedRequests += 1;
                 isRequestProc = false;
                 //Console.WriteLine(acceptedRequests + " accepted");

@@ -11,14 +11,21 @@ class Program
         int timeProcess = 48000;
         double acceptedRequests, declinesRequests, inputRequests, lambda, midServicingTime, mu, q, A, probabilityDeclines;
         bool isGaussian = false;
+        bool isQueue = false;
+
         Console.WriteLine("Enter '0' if the distribution of time is linear and '1' if gaussian");
         inputText = Console.ReadLine();
 
         if (inputText.CompareTo("1") == 0)
             isGaussian = true;
 
+        Console.WriteLine("Enter '0' if non queue and '1' if with queue's size 1");
+        inputText = Console.ReadLine();
 
-        CTimerProcess proc = new CTimerProcess(timeProcess, isGaussian);
+        if (inputText.CompareTo("1") == 0)
+            isQueue = true;
+
+        CTimerProcess proc = new CTimerProcess(timeProcess, isGaussian, isQueue);
 
         acceptedRequests = proc.getAcceptedRequests();
         declinesRequests = proc.getDeclinesRequests();
@@ -37,5 +44,5 @@ class Program
         Console.WriteLine("Propnaya sposobnost' otnos: {0:F}\n", q);
         Console.WriteLine("Propnaya sposobnost' abs: {0:F}\n", A);
         Console.WriteLine("Veroyatnost' otkaza: {0:F}\n", probabilityDeclines);
-    }
+     }
 }
