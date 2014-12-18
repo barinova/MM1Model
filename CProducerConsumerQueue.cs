@@ -12,6 +12,7 @@ class CProducerConsumerQueue : IDisposable
     Queue<string> tasks = new Queue<string>();
     Random rand = new Random();
     int acceptedRequests = 0;
+    bool isRequestProc = false;
 
     public CProducerConsumerQueue()
     {
@@ -52,10 +53,13 @@ class CProducerConsumerQueue : IDisposable
 
             if (task != null)
             {
+                isRequestProc = true;
                 Thread.Sleep(rand.Next(12, 20));
                 
                 acceptedRequests += 1;
-                Console.WriteLine(task + "\nAccepted requests: " + acceptedRequests + "\n");
+                isRequestProc = false;
+                //Console.WriteLine(acceptedRequests + " accepted");
+
             }
             else
                 wh.WaitOne();
@@ -63,5 +67,6 @@ class CProducerConsumerQueue : IDisposable
     }
 
     public int getAcceptedRequests() { return acceptedRequests; }
+    public bool isRequestProcessed() { return isRequestProc; }
 
 }
