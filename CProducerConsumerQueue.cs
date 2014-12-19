@@ -46,8 +46,14 @@ class CProducerConsumerQueue : IDisposable
     {
         lock (locker)
             tasks.Enqueue(task);
-
-        wh.Set();
+        try
+        {
+            wh.Set();
+        }
+        catch
+        {
+            
+        }
     }
 
     public void Dispose()
