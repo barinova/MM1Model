@@ -12,10 +12,12 @@ class CProducerConsumerQueue : IDisposable
     Queue<string> tasks = new Queue<string>();
     Random rand = new Random();
     int acceptedRequests = 0;
-    bool isRequestProc = false;
     CGaussian gaussTime = new CGaussian();
     bool isGaussian = false;
+    bool isQueue = false;
+    bool isRequestProc = false;
     bool queueBusy = false;
+
     public bool isQueueBusy
     {
         get { return queueBusy; }
@@ -24,9 +26,18 @@ class CProducerConsumerQueue : IDisposable
             queueBusy = value;
         }
     }
-    public CProducerConsumerQueue(bool type)
+
+    public bool isTypeQueue
     {
-        isGaussian = type;
+        get
+        {
+            return isQueue;
+        }
+    }
+    public CProducerConsumerQueue(bool typeTime, bool typeQueue)
+    {
+        isGaussian = typeTime;
+        isQueue = typeQueue;
         worker = new Thread(Work);
         worker.Start();
     }
@@ -87,7 +98,7 @@ class CProducerConsumerQueue : IDisposable
         else
         {
             time = gaussTime.Next(12, 20);
-            Console.WriteLine(time);
+            //Console.WriteLine(time);
         }
 
         return time;

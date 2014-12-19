@@ -27,9 +27,9 @@ class Program
 
         CTimerProcess proc = new CTimerProcess(timeProcess, isGaussian, isQueue);
 
-        acceptedRequests = proc.getAcceptedRequests();
-        declinesRequests = proc.getDeclinesRequests();
-        inputRequests = proc.getInputRequests();
+        acceptedRequests = proc.getAcceptedRequests;
+        declinesRequests = proc.getDeclinesRequests;
+        inputRequests = proc.getInputRequests;
 
         lambda = (inputRequests + declinesRequests) / timeProcess;
         midServicingTime = timeProcess / acceptedRequests;
@@ -44,5 +44,10 @@ class Program
         Console.WriteLine("Propnaya sposobnost' otnos: {0:F}\n", q);
         Console.WriteLine("Propnaya sposobnost' abs: {0:F}\n", A);
         Console.WriteLine("Veroyatnost' otkaza: {0:F}\n", probabilityDeclines);
+
+        if (isQueue)
+        {
+            Console.WriteLine("Srednee vremya ozidaniya v ocheredy (sec): {0:F}\n", proc.getTimeWaiting / (1000*proc.getCountQueuePaticipiant));
+        }
      }
 }

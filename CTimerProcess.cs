@@ -13,12 +13,53 @@ class CTimerProcess
     static CProducerConsumerQueue queue;
     double acceptedRequests, declinesRequests;
     static bool isGaussian = false;
-    static bool isQueue = false;
     static bool isQueueBusy = false;
     static CGaussian gaussTime = new CGaussian();
     static double countQueuePaticipiant = 0;
-    static DateTime time, timeWaiting;
+    static int time, timeWaiting = 0;
     System.Threading.TimerCallback requestTimerDelegate = new System.Threading.TimerCallback(timerTick);
+
+
+
+    public double getAcceptedRequests
+    {
+        get
+        {
+            return acceptedRequests;
+        }
+    }
+
+    public double getDeclinesRequests 
+    {
+        get
+        {
+            return declinesRequests;
+        }
+    }
+
+    public double getInputRequests
+    { 
+        get
+        {
+            return inputRequests;
+        }
+    }
+
+    public int getTimeWaiting 
+    { 
+        get
+        {
+        return timeWaiting; 
+        }
+    }
+
+    public double getCountQueuePaticipiant
+    {
+        get
+        {
+            return countQueuePaticipiant;
+        }
+    }
 
     static private void timerTick(object obj)
     {
@@ -32,9 +73,9 @@ class CTimerProcess
         }
         else
         {
-            if (isQueue && !queue.isQueueBusy)
+            if (queue.isTypeQueue && !queue.isQueueBusy)
             {
-                time = DateTime.Now;
+                time = Environment.TickCount;
                 queue.isQueueBusy = true;
                 countQueuePaticipiant += 1;
             }
@@ -67,8 +108,7 @@ class CTimerProcess
 
         if (queue.isQueueBusy)
         {
-            timeWaiting += DateTime.Now - time;
-            inputRequests += 1;
+            timeWaiting += Environment.TickCount - time;
             queue.isQueueBusy = false;
             queue.EnqueueTask("Input requests: " + inputRequests.ToString() + "\n");
         }
@@ -76,7 +116,7 @@ class CTimerProcess
 
     public CTimerProcess(int timeProcess, bool isGaussian, bool isQueue)
     {
-        using (queue = new CProducerConsumerQueue(isGaussian))
+        using (queue = new CProducerConsumerQueue(isGaussian, isQueue))
         {
             DateTime maxTime = DateTime.Now.AddMilliseconds(timeProcess);
 
@@ -93,9 +133,4 @@ class CTimerProcess
                 
         }
     }
-
-    public double getAcceptedRequests() {return acceptedRequests; }
-    public double getDeclinesRequests() { return declinesRequests; }
-    public double getInputRequests() { return inputRequests; }
-
 }
